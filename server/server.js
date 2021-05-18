@@ -8,7 +8,7 @@ let DotaWebAPI = require("dota-web-api");
 let api = new DotaWebAPI("BACADDA8E857C66331F1BB6A7B52331A");
 //const { PlayersOnePlayer } = require("./PlayersOnePlayer");
 //let PlayersOnePlayer = require("./PlayersOnePlayer");
-const router = require("./routes/index");
+const router = require("./routes/mainRouter");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -22,7 +22,7 @@ app.use("/", router);
 const start = () => {
   try {
     app.listen(port, async () => {
-      console.log(`server is up and listening on port ${port} `);
+      console.log(`server is up and listening on port localhost:${port} `);
     });
   } catch (error) {
     console.log(error);
