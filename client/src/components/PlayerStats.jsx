@@ -8,6 +8,9 @@ import "../constants/App.css";
 import { useParams } from "react-router-dom";
 import logo from '../images/Dawnbreaker_icon.png';  
 import logo2 from '../images/dota.png';
+import Loader from '../components/Loader'
+import "../constants/Loader.css";
+import "../constants/heroCards.css";
 
 var STATIC_CDN = "http://cdn.dota2.com/apps/dota2/images/heroes/";
 
@@ -16,20 +19,22 @@ const PlayerStats = (props) => {
   let history = useHistory();
   const { player_id } = useParams();
   //получаем данные с сервера
-  const { players, setPlayers, heroes, setHeroes } = useContext(PlayerContext);
+  const { players, setPlayers, heroes, setHeroes, signatureHeroes, setSignatureHeroes } = useContext(PlayerContext);
+  const [loading, setLoading ] = React.useState(true)
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await MatchesFinder.get(`/players/${player_id}`);
+       
+        setLoading(false)
         setPlayers(response.data.data.players);
-        const response2 = await MatchesFinder.get(`/players/${player_id}`);
-        setHeroes(response2.data.data.heroes);
-        
+        setHeroes(response.data.data.heroes);
+        setSignatureHeroes(response.data.data.signatureHeroes);
       } catch (err) {}
     };
 
     fetchData();
-  }, [player_id, setPlayers, heroes, setHeroes]);
+  }, []);
 
 
 
@@ -40,7 +45,7 @@ const PlayerStats = (props) => {
     bestWins.push(["persWins: " + persWins.toFixed(2), "hero_id: " + hero.hero_id])
     return bestWins
   })
-  console.log(players[0])
+  //console.log(players[0])
   //console.log(bestWins[0])
 
   // let allMatches = [];
@@ -58,10 +63,43 @@ const PlayerStats = (props) => {
   // console.log(max)
   // console.log(min)
   // console.log(total)
- 
+  console.log(loading)
   return (
+
     <React.Fragment>
+      <div id="container">
+  <h1>Best heroes</h1>
+  <hr />
+  {signatureHeroes.map((signatureHero) => {
+     let hero = (Heroes.find((hero_id)=>{
+      return (+(signatureHero.hero_id) === hero_id.id) 
+  })?.name);
+ 
+  let heroImg = signatureHero.hero_id===135 ? logo :  signatureHero.hero_id===0 ? logo2 : STATIC_CDN + hero + "_full.png";
+    return(
+  <div class="card">
+    <div class="front">
+      <img
+        src={heroImg}
+        class="contact" alt =""
+      />
+      <span class="name">{"Hero: "+hero}</span>
+      <hr />
+      <span class="job">{"Score: "+signatureHero.rating} </span>
+    </div>
+    <div class="back">
+      <span>Stats:</span>
+      <p align="center">{"Average KDA: "+signatureHero.average_kda}</p>
+      <p align="center">{"Games: "+signatureHero.games}</p>
+      <p align="center">{"Winrate: "+signatureHero.winrate_hero*100+"%"}</p>
       
+      <div class="icons">
+      </div>
+    </div>
+  </div>)
+})}
+
+</div>
       <table
         className="table table-dark table-striped"
         border-collapse="separate"
@@ -69,9 +107,12 @@ const PlayerStats = (props) => {
         <thead>
           <tr>
           <th scope="col">Hero</th>
+          <th scope="col">Hero</th>
+          <th scope="col">Hero</th>
           </tr>
         </thead>
         <tbody>
+       
           {players.map((player) => {
             
 
@@ -89,12 +130,14 @@ const PlayerStats = (props) => {
               >
                 <td width="50px"><img src={`${heroImg}`} title={`${heroName}`} alt="" /></td>
                 <td width="100px">{player.hero_id}</td>
+                <td width="100px">{player.item_0}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
-     
+      {loading && <Loader/>}
+      
       </React.Fragment>
   );
 };

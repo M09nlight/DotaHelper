@@ -7,18 +7,23 @@ import { useHistory } from "react-router-dom";
 import "../constants/App.css";
 import logo from '../images/Dawnbreaker_icon.png';  
 import logo2 from '../images/dota.png';
+import Loader from '../components/Loader'
 var STATIC_CDN = "http://cdn.dota2.com/apps/dota2/images/heroes/";
+
 
 const MatchesList = (props) => {
   let history = useHistory();
   //получаем данные с сервера
   const { matches, setMatches } = useContext(MatchesContext);
+  const [loading, setLoading ] = React.useState(true)
   //const { heroes, setHeroes } = useContext(MatchesContext);
   useEffect(() => {
     const fetchData = async () => {
       try {
+        
         const response = await MatchesFinder.get("/matches");
         setMatches(response.data.data.matches);
+        setLoading(false)
         //setHeroes(response.data.data.heroes);
         console.log(response.data.data.heroes);
       } catch (err) {}
@@ -33,6 +38,7 @@ const MatchesList = (props) => {
 
   return (
     <React.Fragment>
+     
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text" id="">
@@ -80,6 +86,7 @@ const MatchesList = (props) => {
           </tr>
         </thead>
         <tbody>
+       
           {matches.map((match) => {
             let hours = Math.floor(match.duration / 60 / 60);
             let minutes = Math.floor(match.duration / 60) - hours * 60;
@@ -161,6 +168,7 @@ const MatchesList = (props) => {
           <i className="fas fa-download"></i> More
         </span>
       </button>
+      {loading && <Loader/>}
       </React.Fragment>
   );
 };

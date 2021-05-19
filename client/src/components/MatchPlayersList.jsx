@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import Items from "../constants/Items";
 import logo from '../images/Dawnbreaker_icon.png';  
 import logo2 from '../images/dota.png';
+import Loader from '../components/Loader'
 
 var STATIC_CDN = "http://cdn.dota2.com/apps/dota2/images/heroes/";
 var STATIC_CDN2 = "http://cdn.dota2.com/apps/dota2/images/items/";
@@ -17,12 +18,15 @@ const MatchPlayersList = () => {
     console.log(match_id);
     //получаем данные с сервера
     const { matchPlayers, setMatchPlayers } = useContext(MatchPlayersContext);
+    const [loading, setLoading ] = React.useState(true)
     useEffect(() => {
       const fetchData = async () => {
         try {
+          
             const value = "http://localhost:4000/matches/" + match_id
           const response = await MatchesFinder.get(`/matches/${match_id}`);
           setMatchPlayers(response.data.data.matchPlayers);
+          setLoading(false)
           console.log(setMatchPlayers);
           console.log(value);
         } catch (err) {}
@@ -37,6 +41,7 @@ const MatchPlayersList = () => {
 
     return (
       <React.Fragment>
+       
           <table
             className="table table-dark table-striped"
             border-collapse="separate"
@@ -57,6 +62,7 @@ const MatchPlayersList = () => {
               </tr>
             </thead>
             <tbody>
+           
               {matchPlayers && matchPlayers.map((matchPlayer) => {
                 
                 // let itemName = [];
@@ -153,7 +159,9 @@ let itemImgNeutral = STATIC_CDN2 + itemNameNeutral+ '_lg.png';
               }
             </tbody>
           </table>
+          {loading && <Loader/>}
           </React.Fragment>
+          
       );
 };
 
