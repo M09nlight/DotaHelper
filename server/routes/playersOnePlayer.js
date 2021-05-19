@@ -11,7 +11,7 @@ router.get("/:player_id", async (req, res) => {
     let allMatchesData = [];
     let allMatchesFormatedData = [];
     let endAllMatchesFormatedData = [];
-    let sortRatingObject = [];
+    let sortRatingObjects = [];
 
     let radiantWonObject = [];
     let radiantIsWin = [];
@@ -104,6 +104,35 @@ router.get("/:player_id", async (req, res) => {
       }
     }
 
+    let o = 0;
+    players.data.map((player) => {
+      allMatchesId[o] == player.match_id
+        ? Object.assign(player, { player_is_win: playerIsWin[o] })
+        : null;
+
+      o++;
+    });
+
+    let someObj = [];
+    for (let i = 0; i < allMatchesId.length; i++) {
+      players.data.map((player) => {
+        allMatchesData[i].result.players.map((matchData) => {
+          someObj =
+            matchData.account_id == playerId &&
+            player.hero_id == matchData.hero_id &&
+            player.player_slot == matchData.player_slot
+              ? Object.assign(player, {
+                  item_0: matchData.item_0,
+                  item_1: matchData.item_1,
+                })
+              : null;
+
+          o++;
+        });
+      });
+    }
+    console.log(allMatchesData[0].result.players[0]);
+    console.log(someObj);
     //вывожу в удобном формате
     for (let i = 0; i < allMatchesId.length; i++) {
       endAllMatchesFormatedData.push(
@@ -220,17 +249,18 @@ router.get("/:player_id", async (req, res) => {
           sumHeroAssists = sumHeroAssists + heroAssists[i][j];
         }
         sumHeroGames = heroWins[i].length;
-        winrateHero = +((sumHeroWins / sumHeroGames) * 100).toFixed(1);
-        averageHeroKills = +(sumHeroKills / heroKills[i].length).toFixed(1);
-        averageHeroDeaths = +(sumHeroDeaths / heroDeaths[i].length).toFixed(1);
-        averageHeroAssists = +(sumHeroAssists / heroAssists[i].length).toFixed(
-          1
-        );
-        KDA = +(
-          (averageHeroKills + averageHeroAssists) /
-          averageHeroDeaths
-        ).toFixed(1);
-        rating = +(KDA * winrateHero).toFixed(0);
+        winrateHero = +(sumHeroWins / sumHeroGames);
+        averageHeroKills = +(sumHeroKills / heroKills[i].length);
+        averageHeroDeaths = +(sumHeroDeaths / heroDeaths[i].length);
+        averageHeroAssists = +(sumHeroAssists / heroAssists[i].length);
+        KDA = +((averageHeroKills + averageHeroAssists) / averageHeroDeaths);
+        rating = +(
+          sumHeroGames *
+          0.4 *
+          (KDA * 0.2) *
+          (winrateHero * 0.4 + 0.01) *
+          1000
+        ).toFixed(0);
 
         endAverageHeroRating.push({
           hero_id: heroesId[i],
@@ -241,6 +271,7 @@ router.get("/:player_id", async (req, res) => {
           games: sumHeroGames,
           win: sumHeroWins,
           winrate_hero: winrateHero,
+          player_is_win: playerIsWin[i],
           rating: rating,
         });
 
@@ -278,12 +309,12 @@ router.get("/:player_id", async (req, res) => {
           //console.log("t: " + t + " checkHeroId:" + checkHeroId);
         }
 
-        sortRatingObject.push({
+        sortRatingObjects.push({
           hero_id: obj.hero_id,
           average_kills: obj.average_kills,
           average_deaths: obj.average_deaths,
           average_assists: obj.average_assists,
-          avg_kda: obj.avg_kda,
+          average_kda: obj.avg_kda,
           games: obj.games,
           win: obj.win,
           winrate_hero: obj.winrate_hero,
@@ -295,21 +326,21 @@ router.get("/:player_id", async (req, res) => {
     }
     //});
 
-    console.log(heroAssists);
+    //console.log(heroKills);
     //console.log(allMatchesFormatedData);
 
     res.status(200).json({
       status: "success",
       data: {
-        //players: players.data,
-        //heroes: heroes.data,
+        players: players.data,
+        heroes: heroes.data,
 
         //endAllMatchesFormatedData: endAllMatchesFormatedData,
-        //allMatchesData: allMatchesData,
-        sortRatingObject: sortRatingObject,
-        "-----------------------------------------":
-          "                            ",
-        endAverageHeroRating: endAverageHeroRating,
+        allMatchesData: allMatchesData,
+        signatureHeroes: sortRatingObjects,
+        //"-----------------------------------------":
+        //  "                            ",
+        //endAverageHeroRating: endAverageHeroRating,
       },
     });
   } catch (error) {
