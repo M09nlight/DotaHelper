@@ -18,7 +18,7 @@ const App = () => {
                 <PlayerContextProvider>
            
             <div className="container-inner container-inner-content " >
-            <div className="p-3 mb-2 bg-secondary bg-gradient text-white">
+            <div className="p-3 mb-2 bg-primary bg-gradient text-dark">
         <Router>
             <Switch>
                 <Route exact path="/" component={LoginPage}/>

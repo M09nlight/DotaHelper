@@ -4,7 +4,7 @@
     font-family: 'Muli', sans-serif;
 }
 body {
-    background: url('http://www.platehelp.nl/media/W1siZiIsIjIwMTUvMTAvMjcvMTBfNTZfMjBfNTU3X0lNR18xOTAxXzEuanBnIl1d/IMG_1901-1.jpg');
+    background: url();
     background-size: cover;
 }
 #container {
@@ -76,9 +76,9 @@ body {
 }
 /* //styling */
 .front .contact {
-    height: 120px;
-    width: 120px;
-    border: 5px solid #B2DBBF;
+    height: 130px;
+    width: 150px;
+    border: 5px solid #302205;
     border-radius: 50%;
     display: inline-block;
     margin-bottom: 10px;

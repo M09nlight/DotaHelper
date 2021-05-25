@@ -11,11 +11,90 @@ let api = new DotaWebAPI("BACADDA8E857C66331F1BB6A7B52331A");
 const router = require("./routes/mainRouter");
 const port = process.env.PORT || 3001;
 const app = express();
+const passport = require("passport");
+const SteamStrategy = require("passport-steam").Strategy;
 
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 app.use("/", router);
+
+//////////////////////////////////////
+let steam = require("steam-login");
+
+app.use(
+  require("express-session")({
+    resave: false,
+    saveUninitialized: false,
+    secret: "a secret",
+  })
+);
+app.use(
+  steam.middleware({
+    realm: "http://localhost:3000/",
+    verify: "http://localhost:3000/verify",
+    apiKey: "BACADDA8E857C66331F1BB6A7B52331A",
+  })
+);
+
+app.get("/", function (req, res) {
+  res
+    .send(req.user == null ? "not logged in" : "hello " + req.user.username)
+    .end();
+});
+
+app.get("/authenticate", steam.authenticate(), function (req, res) {
+  res.redirect("/");
+});
+
+app.get("/verify", steam.verify(), function (req, res) {
+  res.send(req.user._json);
+});
+
+app.get("/logout", steam.enforceLogin("/"), function (req, res) {
+  req.logout();
+  res.redirect("/");
+});
+
+/////////
+
+// passport.use(
+//   new SteamStrategy(
+//     {
+//       returnURL: `http://localhost:${port}/`,
+//       realm: `http://localhost:${port}/`,
+//       apiKey: "BACADDA8E857C66331F1BB6A7B52331A",
+//     },
+//     function (identifier, profile, done) {
+//       User.findByOpenID({ openId: identifier }, function (err, user) {
+//         return done(err, user);
+//       });
+//     }
+//   )
+// );
+
+// app.get("/", (req, res) => {
+//   res.send(`<a href="/auth/steam">steam</a>`);
+// });
+// app.post("/", (req, res) => {
+//   res.send(`<a href="/auth/steam">steam</a>`);
+// });
+
+// app.get("/auth/steam", passport.authenticate("steam"), function (req, res) {
+//   // The request will be redirected to Steam for authentication, so
+//   // this function will not be called.
+// });
+
+// app.get(
+//   "/auth/steam/return",
+//   passport.authenticate("steam", { failureRedirect: "/login" }),
+//   function (req, res) {
+//     // Successful authentication, redirect home.
+
+//     res.redirect("/");
+//     res.send(req.user).end();
+//   }
+// );
 
 ////////////////////////////////////////////////////////////////////////////////////START
 
@@ -93,7 +172,7 @@ app.get("/matches/:match_id", async (req, res) => {
   try {
     const matchId = req.params.match_id;
 
-    const response = await api.getMatchDetails(5990135686);
+    const response = await api.getMatchDetails(matchId);
     console.log(response);
     //console.log(response.result.players[0]);
 
@@ -117,15 +196,24 @@ app.get("/matches/:match_id", async (req, res) => {
 
 app.get("/example", async (req, res) => {
   try {
+    const items = await api.getItems();
+    console.log(items.blink);
+    console.log(items.blink.cost);
+    console.log(items.blink.images.lg);
+
     const accId = 263852328;
     const response = await api.getMatchHistory(null, null, null, null, accId);
-    console.log(response);
-    console.log(response.result.matches[0]);
+    //console.log(response);
+    //console.log(response.result.matches[0]);
 
+    const response1 = await api.getLiveLeagueGames();
+    //console.log(response1);
+    //console.log(response1.result.games[0]);
     res.status(200).json({
       status: "success",
       data: {
-        matches: response.result.matches,
+        matches: response1.result.games,
+        //items: items,
       },
     });
   } catch (error) {}

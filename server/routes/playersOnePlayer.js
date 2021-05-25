@@ -1,6 +1,7 @@
 const Router = require("express");
 const router = new Router();
 const axios = require("axios");
+
 let DotaWebAPI = require("dota-web-api");
 let api = new DotaWebAPI("BACADDA8E857C66331F1BB6A7B52331A");
 
@@ -32,7 +33,7 @@ router.get("/:player_id", async (req, res) => {
     let playerIsWin = [];
 
     const players = await axios.get(
-      `https://api.opendota.com/api/players/${playerId}/matches?limit=10`
+      `https://api.opendota.com/api/players/${playerId}/matches?limit=100`
     );
     const heroes = await axios.get(
       `https://api.opendota.com/api/players/${playerId}/heroes`
@@ -72,14 +73,16 @@ router.get("/:player_id", async (req, res) => {
     });
 
     //закидываю в 2хмерный массив где у каждого hero_id выводятся кол-во киллов
-
+    let gh = 0;
     allMatchesFormatedData.map((mData) => {
       let pos = 0;
+      gh++;
+      console.log(" mData: " + gh);
       let key = mData.find((player_data) => {
         pos++;
-
+        console.log(" pos: " + pos);
         return playerId == player_data.account_id;
-      })?.kills;
+      });
       if (key) {
         accPosition.push(pos);
       }
@@ -90,20 +93,22 @@ router.get("/:player_id", async (req, res) => {
       x < radiantIsWin.length, y < accPosition.length;
       x++, y++
     ) {
-      if (accPosition[y] <= 5 && radiantIsWin[x] == false) {
+      if (accPosition[y] <= 5 && radiantIsWin[x] === false) {
         playerIsWin[x] = "false";
       }
-      if (accPosition[y] > 5 && radiantIsWin[x] == false) {
+      if (accPosition[y] > 5 && radiantIsWin[x] === false) {
         playerIsWin[x] = "true";
       }
-      if (accPosition[y] <= 5 && radiantIsWin[x] == true) {
+      if (accPosition[y] <= 5 && radiantIsWin[x] === true) {
         playerIsWin[x] = "true";
       }
-      if (accPosition[y] > 5 && radiantIsWin[x] == true) {
+      if (accPosition[y] > 5 && radiantIsWin[x] === true) {
         playerIsWin[x] = "false";
       }
     }
-
+    console.log(" accPosition: " + accPosition);
+    console.log(" radiantIsWin: " + radiantIsWin);
+    console.log(" playerIsWin: " + playerIsWin);
     let o = 0;
     players.data.map((player) => {
       allMatchesId[o] == player.match_id
@@ -131,8 +136,8 @@ router.get("/:player_id", async (req, res) => {
         });
       });
     }
-    console.log(allMatchesData[0].result.players[0]);
-    console.log(someObj);
+    //console.log(allMatchesData[0].result.players[0]);
+    //console.log(someObj);
     //вывожу в удобном формате
     for (let i = 0; i < allMatchesId.length; i++) {
       endAllMatchesFormatedData.push(
@@ -252,6 +257,8 @@ router.get("/:player_id", async (req, res) => {
         winrateHero = +(sumHeroWins / sumHeroGames);
         averageHeroKills = +(sumHeroKills / heroKills[i].length);
         averageHeroDeaths = +(sumHeroDeaths / heroDeaths[i].length);
+        averageHeroDeaths =
+          averageHeroDeaths == 0 ? (averageHeroDeaths = 1) : averageHeroDeaths;
         averageHeroAssists = +(sumHeroAssists / heroAssists[i].length);
         KDA = +((averageHeroKills + averageHeroAssists) / averageHeroDeaths);
         rating = +(
